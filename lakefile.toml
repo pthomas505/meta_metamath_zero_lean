@@ -12,6 +12,11 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.15.0"
 
+[[require]]
+name = "mathlib_extra_lean"
+git = "https://github.com/pthomas505/mathlib_extra_lean.git"
+rev = "main"
+
 [[lean_lib]]
 name = "MetaMetamathZeroLean"
 globs = ["MetaMetamathZeroLean.+"]
