@@ -1,4 +1,4 @@
-import MathlibExtra.FunctionUpdateITE
+import MathlibExtraLean.FunctionUpdateITE
 
 import Mathlib.Util.CompileInductive
 
