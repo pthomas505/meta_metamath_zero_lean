@@ -1,4 +1,5 @@
 import MathlibExtraLean.FunctionUpdateITE
+import MathlibExtraLean.FunctionUpdateFromPairOfListsITE
 
 import Mathlib.Util.CompileInductive
 
@@ -229,7 +230,7 @@ def sub
   | def_ X xs => def_ X (xs.map σ.1)
 
 
-structure Definition : Type :=
+structure Definition : Type where
   name : DefName
   args : List VarName
   F : Formula
@@ -492,7 +493,7 @@ def Holds
   | ([] : Env), def_ _ _ => False
   | d :: E, def_ name args =>
     if name = d.name ∧ args.length = d.args.length
-    then Holds D I (Function.updateListITE V d.args (List.map V args)) M E d.F
+    then Holds D I (Function.updateFromPairOfListsITE V d.args (List.map V args)) M E d.F
     else Holds D I V M E (def_ name args)
 termination_by E phi => (E.length, phi)
 
@@ -1187,9 +1188,9 @@ theorem holds_coincide_var
     simp only [Holds]
     split_ifs
     case _ c1 =>
-      apply E_ih (Function.updateListITE V E_hd.args (List.map V xs)) (Function.updateListITE V' E_hd.args (List.map V' xs)) E_hd.F E_hd.args E_hd.nf
+      apply E_ih (Function.updateFromPairOfListsITE V E_hd.args (List.map V xs)) (Function.updateFromPairOfListsITE V' E_hd.args (List.map V' xs)) E_hd.F E_hd.args E_hd.nf
       intro v a1
-      apply Function.updateListITE_fun_coincide_mem_eq_len
+      apply Function.updateFromPairOfListsITE_fun_coincide_mem_eq_len
       · tauto
       · exact a1
       · tauto
@@ -1483,7 +1484,7 @@ theorem holds_sub
     case intro h2_left h2_right =>
       unfold sub
       simp only [Holds]
-      simp only [Function.comp.assoc]
+      simp only [Function.comp_assoc]
       simp only [h2_left]
       simp only [Function.comp_id]
   case pred_ X xs =>
@@ -1551,10 +1552,10 @@ theorem holds_sub
       case _ c1 =>
         cases c1
         case intro c1_left c1_right =>
-          have s2 : Holds D I (Function.updateListITE (V ∘ σ.val) E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F ↔ Holds D I (Function.updateListITE V E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F
-          apply holds_coincide_var D I (Function.updateListITE (V ∘ σ.val) E_hd.args (List.map (V ∘ σ.val) xs)) (Function.updateListITE V E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F E_hd.args E_hd.nf
+          have s2 : Holds D I (Function.updateFromPairOfListsITE (V ∘ σ.val) E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F ↔ Holds D I (Function.updateFromPairOfListsITE V E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F
+          apply holds_coincide_var D I (Function.updateFromPairOfListsITE (V ∘ σ.val) E_hd.args (List.map (V ∘ σ.val) xs)) (Function.updateFromPairOfListsITE V E_hd.args (List.map (V ∘ σ.val) xs)) M E_tl E_hd.F E_hd.args E_hd.nf
           intro v a1
-          apply Function.updateListITE_mem_eq_len
+          apply Function.updateFromPairOfListsITE_mem_eq_len
           · exact a1
           · simp
             simp only [c1_right]
@@ -1625,7 +1626,7 @@ theorem not_free_imp_is_not_free
     simp only [Holds]
     intro V d
     congr! 1
-    apply List.map_congr
+    apply List.map_congr_left
     intro x a1
 
     have s1 : ¬ x = v
@@ -1720,9 +1721,9 @@ theorem not_free_imp_is_not_free
 
       split_ifs
       case _ c1 =>
-        apply holds_coincide_var D I (Function.updateListITE V E_hd.args (List.map V xs)) (Function.updateListITE (Function.updateITE V v a) E_hd.args (List.map (Function.updateITE V v a) xs)) M E_tl E_hd.F E_hd.args E_hd.nf
+        apply holds_coincide_var D I (Function.updateFromPairOfListsITE V E_hd.args (List.map V xs)) (Function.updateFromPairOfListsITE (Function.updateITE V v a) E_hd.args (List.map (Function.updateITE V v a) xs)) M E_tl E_hd.F E_hd.args E_hd.nf
         · intro v' a1
-          apply Function.updateListITE_map_updateIte V (Function.updateITE V v a)
+          apply Function.updateFromPairOfListsITE_map_updateIte V (Function.updateITE V v a)
           · intro y a2 contra
             subst contra
             contradiction
@@ -1944,7 +1945,7 @@ theorem lem_4
   (h1 : E.WellFormed)
   (h2 : d ∈ E)
   (h3 : name = d.name ∧ args.length = d.args.length) :
-  Holds D I (Function.updateListITE V d.args (List.map V args)) M E d.F ↔ Holds D I V M E (def_ name args) :=
+  Holds D I (Function.updateFromPairOfListsITE V d.args (List.map V args)) M E d.F ↔ Holds D I V M E (def_ name args) :=
   by
   induction E
   case nil =>
@@ -1970,7 +1971,7 @@ theorem lem_4
           cases h2
           case inl c2 =>
             subst c2
-            exact holds_coincide_env D I (Function.updateListITE V d.args (List.map V args)) M tl (d :: tl) d.F s2 h1_right_left s1
+            exact holds_coincide_env D I (Function.updateFromPairOfListsITE V d.args (List.map V args)) M tl (d :: tl) d.F s2 h1_right_left s1
           case inr c2 =>
             cases h3
             case intro h3_left h3_right =>
@@ -1994,7 +1995,7 @@ theorem lem_4
           case inr c2 =>
             specialize ih h1_right_right c2
             simp only [← ih]
-            apply holds_coincide_env D I (Function.updateListITE V d.args (List.map V args)) M tl (hd :: tl) d.F s2
+            apply holds_coincide_env D I (Function.updateFromPairOfListsITE V d.args (List.map V args)) M tl (hd :: tl) d.F s2
             apply def_in_well_formed_env_is_meta_var_or_all_def_in_env tl d h1_right_right c2
             exact s1
 
@@ -2051,10 +2052,10 @@ theorem holds_conv
     simp only [holds_coincide_meta_var_no_meta_var D I (V ∘ σ.val) (fun (X' : MetaVarName) (V' : Valuation D) => Holds D I (V' ∘ σ') M E (meta_var_ X')) M E d.F s3]
     clear s3
 
-    apply holds_coincide_var D I (Function.updateListITE V d.args (List.map V (List.map σ.val d.args))) (V ∘ σ.val) M E d.F d.args d.nf
+    apply holds_coincide_var D I (Function.updateFromPairOfListsITE V d.args (List.map V (List.map σ.val d.args))) (V ∘ σ.val) M E d.F d.args d.nf
     intro v a2
     simp
-    exact Function.updateListITE_map_mem V (V ∘ σ.val) d.args v a2
+    exact Function.updateFromPairOfListsITE_map_mem V (V ∘ σ.val) d.args v a2
 
 
 theorem holds_is_proof
@@ -2150,7 +2151,7 @@ theorem holds_is_proof
       exact h1_ih_1 psi a2 M nf hyp V''
 
       specialize s3 (V' ∘ σ')
-      simp only [Function.comp.assoc] at s3
+      simp only [Function.comp_assoc] at s3
       simp only [a1.right] at s3
       simp only [Function.comp_id] at s3
       exact s3
